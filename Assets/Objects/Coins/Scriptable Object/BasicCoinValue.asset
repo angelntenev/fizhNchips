@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c2c9896f36f5e9479c1891e824ffc36, type: 3}
+  m_Name: BasicCoinValue
+  m_EditorClassIdentifier: 
+  nameOfCollectable: Coin
+  artwork: {fileID: 21300000, guid: 5d8d555b6b553a94a9cd8f7fcb457c50, type: 3}
+  value: 20
