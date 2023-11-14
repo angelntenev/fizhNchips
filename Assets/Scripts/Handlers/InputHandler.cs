@@ -22,7 +22,7 @@ public class InputHandler : MonoBehaviour
         {
             return;
         }
-
+        GameObject enemyObject = GameObject.FindGameObjectWithTag("Enemy");
         // Create a ray from the camera to our click position
         Ray ray = _mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
         RaycastHit2D hit = Physics2D.GetRayIntersection(ray);
@@ -36,15 +36,35 @@ public class InputHandler : MonoBehaviour
                 MoneyManager.AddMoney(CoinValues.value);
                 Destroy(hit.collider.gameObject);
             }
+            if (hit.collider.gameObject.CompareTag("Clownfish") || hit.collider.gameObject.CompareTag("Carnivore"))
+            {
+                if (GameObject.FindGameObjectsWithTag("Food").Length < 10)
+                {
+                    Vector2 spawnPosition = _mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+                    Instantiate(Food, spawnPosition, Quaternion.identity);
+                }
+            }
+
+            if (hit.collider.gameObject.CompareTag("Enemy"))
+            {
+                ShootEnemy shot = enemyObject.GetComponent<ShootEnemy>();
+                shot.Shoot(GetCursorWorldPosition());
+            }
             // If it's not a collectable, don't do anything
         }
         else // If the ray didn't hit anything, we're clicking on empty space
         {
-            // Convert the mouse position to a point in world space
-            Vector2 spawnPosition = _mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-
-            // Instantiate the object at that position
-            Instantiate(Food, spawnPosition, Quaternion.identity);
+            if (GameObject.FindGameObjectsWithTag("Food").Length < 10)
+            {
+                Vector2 spawnPosition = _mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+                Instantiate(Food, spawnPosition, Quaternion.identity);
+            }
         }
+    }
+
+    private Vector2 GetCursorWorldPosition()
+    {
+        Vector2 screenPosition = Mouse.current.position.ReadValue();
+        return _mainCamera.ScreenToWorldPoint(screenPosition);
     }
 }
