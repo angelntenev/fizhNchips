@@ -12,7 +12,7 @@ public class ClownFishGrowth : MonoBehaviour
     int stageOfGrowth = 0;
     private bool isMatureForCoins = false;
 
-    private Vector3 fishSizeToIncrease = new Vector3(0.3f, 0.3f, 0.3f);
+    private Vector3 fishSizeToIncrease = new Vector3(0.7f, 0.7f, 0.7f);
 
 
     public void addToGrowth(float value)
@@ -40,7 +40,7 @@ public class ClownFishGrowth : MonoBehaviour
                     transform.localScale = newScale;
                 }
                 else transform.localScale = newScale;
-                fishSizeToIncrease = new Vector3(0.1f, 0.1f, 0.1f);
+                fishSizeToIncrease = new Vector3(1f, 1f, 1f);
             }
             if (isMatureForCoins == false && stageOfGrowth > 0)
             {

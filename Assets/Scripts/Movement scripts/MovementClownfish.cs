@@ -31,7 +31,7 @@ public class ClownfishMovement : MonoBehaviour
     void Start()
     {
         SetRandomStartPosition();
-        //transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
+        transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
         currentXCoordinate = transform.position.x;
         destinationPosition = GetRandomScreenPosition();
         if (currentXCoordinate > destinationPosition.x)
