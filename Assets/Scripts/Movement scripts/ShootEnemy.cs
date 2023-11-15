@@ -16,10 +16,13 @@ public class ShootEnemy : MonoBehaviour
     public void Shoot(Vector2 clickWorldPosition)
     {
         Vector2 objectPosition = transform.position;
-        Vector2 directionToClick = (clickWorldPosition - objectPosition).normalized;
-        Vector2 moveDirection = -directionToClick; // Opposite direction
+        Vector2 directionToClick = (clickWorldPosition - objectPosition);
+        // Consider the object's mass so the force is consistent regardless of mass
+        Vector2 force = directionToClick.normalized * (moveSpeed / rb.mass);
 
-        // Apply an impulse force to move the object
-        rb.AddForce(moveDirection * moveSpeed, ForceMode2D.Impulse);
+        // Apply the force inversely to the click direction
+        rb.AddForce(-force, ForceMode2D.Impulse);
+
     }
+
 }
