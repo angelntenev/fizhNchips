@@ -6,17 +6,24 @@ using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour
 {
-    public GameObject settingsPanel; // Reference to the settings panel
-    public Toggle isFullScreenToggle; // Reference to the fullscreen toggle UI component
+    public GameObject settingsPanel;
+    public Toggle isFullScreenToggle;
     public Camera gameCamera;
 
-    public float fullscreenFieldOfView = 60f; // Example value, adjust as needed
-    public float windowedFieldOfView = 50f; // Example value, adjust as needed
+    public float fullscreenFieldOfView = 60f; 
+    public float windowedFieldOfView = 50f;
+
+
+    ScreenSettingsManager screenSettingsManager;
+
 
 
 
     void Start()
     {
+        screenSettingsManager = GetComponent<ScreenSettingsManager>();
+        screenSettingsManager.SetFullScreen(isFullScreenToggle.isOn);
+
         // Ensure the settings panel is initially hidden
         if (settingsPanel != null)
             settingsPanel.SetActive(false);
@@ -39,7 +46,9 @@ public class MainMenu : MonoBehaviour
     // Start Game
     public void LoadSampleScene()
     {
+        screenSettingsManager.SetFullScreen(isFullScreenToggle.isOn);
         SceneManager.LoadScene("SampleScene");
+
     }
 
     // Toggle the settings panel
