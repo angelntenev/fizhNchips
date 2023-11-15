@@ -1296,7 +1296,7 @@ RectTransform:
   m_Father: {fileID: 1301754235}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -3089,7 +3089,7 @@ RectTransform:
   m_Father: {fileID: 1837466088}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -3458,6 +3458,7 @@ GameObject:
   - component: {fileID: 1750006195}
   - component: {fileID: 1750006194}
   - component: {fileID: 1750006197}
+  - component: {fileID: 1750006198}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -3532,6 +3533,19 @@ MonoBehaviour:
   gameCamera: {fileID: 298195474}
   fullscreenFieldOfView: 60
   windowedFieldOfView: 50
+--- !u!114 &1750006198
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1750006193}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e542c45d2a3b4477ab61f760b12ceb12, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isFullScreen: 0
 --- !u!1 &1785677754
 GameObject:
   m_ObjectHideFlags: 0
@@ -4115,7 +4129,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1992734184
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4452,7 +4466,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2034162975
 RectTransform:
   m_ObjectHideFlags: 0

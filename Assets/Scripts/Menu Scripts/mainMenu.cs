@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO.Compression;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -20,9 +21,13 @@ public class MainMenu : MonoBehaviour
 
 
     void Start()
-    {
-        screenSettingsManager = GetComponent<ScreenSettingsManager>();
-        screenSettingsManager.SetFullScreen(isFullScreenToggle.isOn);
+    {     
+        if (screenSettingsManager != null)
+        {
+          
+            Screen.fullScreen = screenSettingsManager.getFullScreen();
+          
+        }
 
         // Ensure the settings panel is initially hidden
         if (settingsPanel != null)
@@ -46,6 +51,8 @@ public class MainMenu : MonoBehaviour
     // Start Game
     public void LoadSampleScene()
     {
+
+        screenSettingsManager = GetComponent<ScreenSettingsManager>();
         screenSettingsManager.SetFullScreen(isFullScreenToggle.isOn);
         SceneManager.LoadScene("SampleScene");
 
