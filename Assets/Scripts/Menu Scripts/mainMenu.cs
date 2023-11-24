@@ -1,124 +1,199 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.IO.Compression;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.Audio;
+using TMPro;
+using System.Collections.Generic;
+
 
 public class MainMenu : MonoBehaviour
 {
+
+    public TMP_InputField nameInputField;
+    public TMP_Text nameDisplayText;
+
+    private const string UserNamePrefKey = "UserName";
+
+    public GameObject menuOptions;
+
+    public GameObject userNameRegister;
     public GameObject settingsPanel;
     public Toggle isFullScreenToggle;
-    public Camera gameCamera;
+    public TMP_Dropdown resolutionDropdown;
 
-    public float fullscreenFieldOfView = 60f; 
-    public float windowedFieldOfView = 50f;
+    public Slider volumeSlider; 
 
-
-    ScreenSettingsManager screenSettingsManager;
-
-    
     public AudioMixer audioMixer;
-
+   
     private Resolution[] resolutions;
 
-    public Dropdown resolutionDropdown;
 
-  
 
     void Start()
-    {     
+    {
+        // Load the saved name and display it
+        string savedName = PlayerPrefs.GetString(UserNamePrefKey, "");
+        nameDisplayText.text = savedName;
 
-       resolutions =  Screen.resolutions;
+        if (string.IsNullOrEmpty(savedName))
+        {
+            // No name saved, show only the name input
+            menuOptions.SetActive(false);
+            userNameRegister.SetActive(true);
+        }
+        else
+        {
+            // Name already saved, show menu options
+            userNameRegister.SetActive(false);
+            menuOptions.SetActive(true);
+            nameDisplayText.text = savedName;
 
-       resolutionDropdown.ClearOptions();
+            LoadSettings();
+            isFullScreenToggle.onValueChanged.AddListener(HandleFullScreenToggle);
+        }
+
+        settingsPanel.SetActive(false);
+
+        LoadSettings();
+
+        isFullScreenToggle.onValueChanged.AddListener(HandleFullScreenToggle);
+    }
+
+    public void SaveName()
+    {
+        string userName = nameInputField.text;
+        PlayerPrefs.SetString(UserNamePrefKey, userName);
+        PlayerPrefs.Save();
+
+                if (!string.IsNullOrEmpty(userName))
+                {
+                    PlayerPrefs.SetString(UserNamePrefKey, userName);
+                    PlayerPrefs.Save();
+
+                    nameDisplayText.text = userName;
+
+                    // Hide name input and show menu options
+                    userNameRegister.SetActive(false);
+                    menuOptions.SetActive(true);
+
+                    LoadSettings();
+                    isFullScreenToggle.onValueChanged.AddListener(HandleFullScreenToggle);
+                }
+       
+        nameDisplayText.text = userName;
+    }
+
+ 
+
+   
+    private void HandleFullScreenToggle(bool isFullScreen)
+    {
+        SetFullScreen(isFullScreen);
+
+        if (isFullScreen)
+        {
+            SetFullScreen(true);
+            SetBestResolutionForFullScreen();
+        }
+        else
+        {
+            SetFullScreen(false);
+            SetResolutionToWindowed();
+        }
+    }
+
+ 
+
+     private void SetFullScreen(bool isFullScreen)
+    {
+        Screen.fullScreen = isFullScreen;
+        settingsPanel.SetActive(false);
+    }
+
+
+    private void SetBestResolutionForFullScreen()
+    {
+        Resolution bestResolution = GetBestResolution();
+        Screen.SetResolution(bestResolution.width, bestResolution.height, true);
+    }
+
+    private Resolution GetBestResolution()
+    {
+        Resolution bestResolution = resolutions[resolutions.Length - 1]; 
+        return bestResolution;
+    }
+
+     private void SetResolutionToWindowed()
+    {
+        Resolution bestResolution = GetBestResolution();
+        Screen.SetResolution(bestResolution.width, bestResolution.height, false);
+    }
+
+    private void LoadSettings()
+    {
+        // Load saved settings from PlayerPrefs
+        int savedResolutionIndex = PlayerPrefs.GetInt("ResolutionIndex", 0);
+
+        bool isFullScreenSaved = PlayerPrefs.GetInt("IsFullScreen", 0) == 1;
+
+        float savedVolume = PlayerPrefs.GetFloat("Volume", 0.75f);
+        volumeSlider.value = savedVolume; // Set the volume slider's value
+
+        LoadResolutions(savedResolutionIndex);
+        isFullScreenToggle.isOn = isFullScreenSaved;
+  
+    }
+
+    private void LoadResolutions(int savedResolutionIndex)
+    {
+        resolutions = Screen.resolutions;
+        resolutionDropdown.ClearOptions();
 
         List<string> options = new List<string>();
-       
-        int currentResolutionIndex = 0;
         for (int i = 0; i < resolutions.Length; i++)
         {
             string option = resolutions[i].width + " x " + resolutions[i].height;
             options.Add(option);
-
-                if(resolutions[i].width == Screen.currentResolution.width && 
-                resolutions[i]. height == Screen.currentResolution.height)
-                {
-                    resolutionDropdown.value = i;
-                    currentResolutionIndex = i;
-                }
         }
-       
+
         resolutionDropdown.AddOptions(options);
-        resolutionDropdown.value = currentResolutionIndex;
+        resolutionDropdown.value = savedResolutionIndex;
         resolutionDropdown.RefreshShownValue();
-
-
-        if (screenSettingsManager != null)
-        {
-          
-            Screen.fullScreen = screenSettingsManager.getFullScreen();
-          
-        }
-
-        // Ensure the settings panel is initially hidden
-        if (settingsPanel != null)
-            settingsPanel.SetActive(false);
-
-        // Initialize the toggle state to reflect the current fullscreen mode
-        if (isFullScreenToggle != null)
-            isFullScreenToggle.isOn = Screen.fullScreen;
-        
-        // Add listener to the fullscreen toggle
-        if (isFullScreenToggle != null)
-            isFullScreenToggle.onValueChanged.AddListener(ToggleFullScreen);
     }
 
-    // Update is called once per frame
-    void Update()
+    public void OnApplyButtonClicked()
     {
-        // Optional: Implement functionality that requires constant updates
-    }
+        // Update PlayerPrefs
+        PlayerPrefs.SetInt("ResolutionIndex", resolutionDropdown.value);
+        PlayerPrefs.SetInt("IsFullScreen", isFullScreenToggle.isOn ? 1 : 0);
+        PlayerPrefs.SetFloat("Volume", volumeSlider.value); // Save the volume slider's value
+        PlayerPrefs.Save();
 
-
-
-    public void SetVolume(float volume)
-    {
-        audioMixer.SetFloat("volume", volume);
-        Debug.Log(volume);
-    }
-
-    public void SetQuality(int qualityIndex)
-    {
-        QualitySettings.SetQualityLevel(qualityIndex);
-    }
-
-    public void SetResolution(int resolutionIndex)
-    {
+        // Apply settings immediately
+    
+        // Apply resolution
+        int resolutionIndex = PlayerPrefs.GetInt("ResolutionIndex", 0);
         Resolution resolution = resolutions[resolutionIndex];
         Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreen);
-    }
 
-    public void SetFullScreen(bool isFullScreen)
-    {
+        // Apply fullscreen
+        bool isFullScreen = PlayerPrefs.GetInt("IsFullScreen", 0) == 1;
         Screen.fullScreen = isFullScreen;
+
+        // Apply volume
+        float volume = PlayerPrefs.GetFloat("Volume", 0.75f);
+        audioMixer.SetFloat("volume", volume);
+  
+
+        settingsPanel.SetActive(false);
     }
 
-
-
-
-    // Start Game
     public void LoadSampleScene()
     {
-
-        screenSettingsManager = GetComponent<ScreenSettingsManager>();
-        screenSettingsManager.SetFullScreen(isFullScreenToggle.isOn);
         SceneManager.LoadScene("SampleScene");
-
+        LoadSettings();
     }
 
-    // Toggle the settings panel
     public void ToggleSettingsPanel()
     {
         if (settingsPanel != null)
@@ -132,41 +207,16 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    // Hide the settings panel
     public void HideSettingsPanel()
     {
         if (settingsPanel != null)
             settingsPanel.SetActive(false);
     }
 
-    public void ToggleFullScreen(bool isFullScreen)
-    {
-        Screen.fullScreen = isFullScreen;
-
-        if (gameCamera != null)
-        {
-            if (isFullScreen)
-            {
-                // Adjust the camera for fullscreen mode
-                gameCamera.fieldOfView = fullscreenFieldOfView;
-            }
-            else
-            {
-                // Adjust the camera for windowed mode
-                gameCamera.fieldOfView = windowedFieldOfView;
-            }
-        }
-    }
-
-
-
-
-
-
-
-
     public void QuitGame()
     {
         Application.Quit();
     }
+
+  
 }
