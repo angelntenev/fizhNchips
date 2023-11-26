@@ -55,8 +55,9 @@ public class MainMenu : MonoBehaviour
         settingsPanel.SetActive(false);
 
         LoadSettings();
-
-        isFullScreenToggle.onValueChanged.AddListener(HandleFullScreenToggle);
+       
+     
+        
     }
 
     public void SaveName()
@@ -89,46 +90,15 @@ public class MainMenu : MonoBehaviour
     private void HandleFullScreenToggle(bool isFullScreen)
     {
         SetFullScreen(isFullScreen);
-
-        if (isFullScreen)
-        {
-            SetFullScreen(true);
-            SetBestResolutionForFullScreen();
-        }
-        else
-        {
-            SetFullScreen(false);
-            SetResolutionToWindowed();
-        }
     }
 
- 
-
-     private void SetFullScreen(bool isFullScreen)
+    private void SetFullScreen(bool isFullScreen)
     {
+        // Just set the full screen mode, don't change the resolution here
         Screen.fullScreen = isFullScreen;
-        settingsPanel.SetActive(false);
     }
 
-
-    private void SetBestResolutionForFullScreen()
-    {
-        Resolution bestResolution = GetBestResolution();
-        Screen.SetResolution(bestResolution.width, bestResolution.height, true);
-    }
-
-    private Resolution GetBestResolution()
-    {
-        Resolution bestResolution = resolutions[resolutions.Length - 1]; 
-        return bestResolution;
-    }
-
-     private void SetResolutionToWindowed()
-    {
-        Resolution bestResolution = GetBestResolution();
-        Screen.SetResolution(bestResolution.width, bestResolution.height, false);
-    }
-
+  
     private void LoadSettings()
     {
         // Load saved settings from PlayerPrefs
@@ -150,10 +120,20 @@ public class MainMenu : MonoBehaviour
         resolutionDropdown.ClearOptions();
 
         List<string> options = new List<string>();
-        for (int i = 0; i < resolutions.Length; i++)
+        List<Resolution> desiredResolutions = new List<Resolution>
         {
-            string option = resolutions[i].width + " x " + resolutions[i].height;
-            options.Add(option);
+            new Resolution { width = 1920, height = 1080 },
+            new Resolution { width = 2560, height = 1440 },
+            new Resolution { width = 3840, height = 2160 }
+        };
+
+        foreach (var res in desiredResolutions)
+        {
+            string option = res.width + " x " + res.height;
+            if (!options.Contains(option))
+            {
+                options.Add(option);
+            }
         }
 
         resolutionDropdown.AddOptions(options);
@@ -169,24 +149,63 @@ public class MainMenu : MonoBehaviour
         PlayerPrefs.SetFloat("Volume", volumeSlider.value); // Save the volume slider's value
         PlayerPrefs.Save();
 
-        // Apply settings immediately
-    
-        // Apply resolution
-        int resolutionIndex = PlayerPrefs.GetInt("ResolutionIndex", 0);
-        Resolution resolution = resolutions[resolutionIndex];
-        Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreen);
-
-        // Apply fullscreen
-        bool isFullScreen = PlayerPrefs.GetInt("IsFullScreen", 0) == 1;
-        Screen.fullScreen = isFullScreen;
-
-        // Apply volume
-        float volume = PlayerPrefs.GetFloat("Volume", 0.75f);
-        audioMixer.SetFloat("volume", volume);
-  
+        // Apply settings
+        ApplyResolution();
+        ApplyFullScreen();
+        ApplyVolume();
 
         settingsPanel.SetActive(false);
     }
+
+    private void ApplyResolution()
+    {
+        Resolution selectedResolution = MapDropdownIndexToResolution(resolutionDropdown.value);
+        selectedResolution = ClampResolutionToScreenSize(selectedResolution);
+        Screen.SetResolution(selectedResolution.width, selectedResolution.height, Screen.fullScreen);
+    }
+
+    private void ApplyFullScreen()
+    {
+        bool isFullScreen = PlayerPrefs.GetInt("IsFullScreen", 0) == 1;
+        Screen.fullScreen = isFullScreen;
+    }
+
+    private void ApplyVolume()
+    {
+        float volume = PlayerPrefs.GetFloat("Volume", 0.75f);
+        audioMixer.SetFloat("volume", volume);
+    }
+
+     private Resolution MapDropdownIndexToResolution(int dropdownIndex)
+    {
+        List<Resolution> desiredResolutions = new List<Resolution>
+        {
+            new Resolution { width = 1920, height = 1080 },
+            new Resolution { width = 2560, height = 1440 },
+            new Resolution { width = 3840, height = 2160 }
+        };
+
+        if (dropdownIndex >= 0 && dropdownIndex < desiredResolutions.Count)
+        {
+            return desiredResolutions[dropdownIndex];
+        }
+        else
+        {
+            // Return a default resolution or handle the error appropriately
+            return new Resolution { width = 1920, height = 1080 };
+        }
+    }
+
+    private Resolution ClampResolutionToScreenSize(Resolution resolution)
+    {
+        Resolution currentScreenResolution = Screen.currentResolution;
+        resolution.width = Mathf.Min(resolution.width, currentScreenResolution.width);
+        resolution.height = Mathf.Min(resolution.height, currentScreenResolution.height);
+        return resolution;
+    }
+
+  
+
 
     public void LoadSampleScene()
     {
