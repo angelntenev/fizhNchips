@@ -10,6 +10,7 @@ public class InputHandler : MonoBehaviour
     public ObjectAssets CoinValues;
     public GameObject Food;
     public GameObject buyOption1;
+    public float currentDamage;
 
     private void Awake()
     {
@@ -48,7 +49,7 @@ public class InputHandler : MonoBehaviour
             if (hit.collider.gameObject.CompareTag("Enemy"))
             {
                 ShootEnemy shot = enemyObject.GetComponent<ShootEnemy>();
-                shot.Shoot(GetCursorWorldPosition());
+                shot.Shoot(GetCursorWorldPosition(), currentDamage);
             }
             // If it's not a collectable, don't do anything
         }

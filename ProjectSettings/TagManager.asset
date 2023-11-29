@@ -9,6 +9,7 @@ TagManager:
   - Clownfish
   - Carnivore
   - Enemy
+  - Manager
   layers:
   - Default
   - TransparentFX

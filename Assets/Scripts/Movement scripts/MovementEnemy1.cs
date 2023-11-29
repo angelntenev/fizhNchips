@@ -15,14 +15,20 @@ public class MovementEnemy1 : MonoBehaviour
     {
         
     }
+    
 
     // Update is called once per frame
     void Update()
     {
+        
         float movementSpeed = speed * Time.deltaTime;
         GameObject closestFood = FindClosestFood();
-        destinationPosition = closestFood.transform.position;
-        transform.position = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
+        if (closestFood != null)
+        {
+            destinationPosition = closestFood.transform.position;
+            transform.position = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
+
+        }
 
     }
 
@@ -89,5 +95,7 @@ public class MovementEnemy1 : MonoBehaviour
         }
         return taggedObjects;
     }
+
+    
 
 }
