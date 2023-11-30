@@ -103,6 +103,7 @@ MonoBehaviour:
   collectablePrefab: {fileID: 3071426692286972775, guid: 78f6812811d98ce4e8f65935ea7e3f5f, type: 3}
   spawnOffset: {x: 0, y: -1}
   waiting: 0
+  destinationPosition: {x: 0, y: 0}
   minWaitTime: 1
   maxWaitTime: 3
   speed: 1.5
@@ -149,7 +150,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 10.24, y: 10.24}
+  m_Size: {x: 6.24, y: 6.26}
   m_EdgeRadius: 0
 --- !u!114 &-2083307953993234830
 MonoBehaviour:

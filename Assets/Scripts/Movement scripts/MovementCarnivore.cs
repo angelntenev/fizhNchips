@@ -24,12 +24,22 @@ public class MovementCarnivore : MonoBehaviour
 
     private HungerActivityCarnivore hungerActivityCarnivore;
 
+    private static int nextCarnivoreId = 0;
+    private int carnivoreId;
+
+    void Awake() 
+    {
+        carnivoreId = nextCarnivoreId++;
+    }
+
+
     // Start is called before the first frame update
     void Start()
     {
-        SetRandomStartPosition();
+       // LoadPosition(); 
+        //SetRandomStartPosition();
         transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
-        currentXCoordinate = transform.position.x;
+        //currentXCoordinate = transform.position.x;
         destinationPosition = GetRandomScreenPosition();
         if (currentXCoordinate > destinationPosition.x)
         {
@@ -49,9 +59,13 @@ public class MovementCarnivore : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
+        SavePosition();
+        
         float movementSpeed = speed * Time.deltaTime;
         if (!hungerActivityCarnivore.getIsDying())
         {
+          
             if (!hungerActivityCarnivore.getIsHungry())
             {
                 if (!arrivedAtDestination)
@@ -100,6 +114,47 @@ public class MovementCarnivore : MonoBehaviour
             }
         }
     }
+
+
+    //Save/Load Carnivore methods
+    private void SavePosition()
+    {
+        PlayerPrefs.SetString("CarnivorePosition_" + carnivoreId, SerializeVector(transform.position));
+    }
+
+    private void LoadPosition()
+    {
+        string savedPosition = PlayerPrefs.GetString("CarnivorePosition_" + carnivoreId, string.Empty);
+        if (!string.IsNullOrEmpty(savedPosition))
+        {
+            Vector3 position = DeserializeVector(savedPosition);
+            transform.position = position;
+        }
+    }
+
+    private string SerializeVector(Vector3 vector)
+    {
+        return vector.x + "," + vector.y + "," + vector.z;
+    }
+
+    private Vector3 DeserializeVector(string data)
+    {
+        string[] values = data.Split(',');
+        if (values.Length == 3)
+        {
+            return new Vector3(float.Parse(values[0]), float.Parse(values[1]), float.Parse(values[2]));
+        }
+        return Vector3.zero;
+    }
+
+
+
+
+
+
+
+
+
 
     Vector2 GetRandomScreenPosition()
     {

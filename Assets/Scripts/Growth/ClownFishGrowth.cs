@@ -15,6 +15,7 @@ public class ClownFishGrowth : MonoBehaviour
     private Vector3 fishSizeToIncrease = new Vector3(0.7f, 0.7f, 0.7f);
 
 
+
     public void addToGrowth(float value)
     {
         growth += value;

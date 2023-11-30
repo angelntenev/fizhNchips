@@ -10,7 +10,7 @@ public class MoneyManager : MonoBehaviour
 
     void Start()
     {
-
+        LoadMoney(); // Load money from PlayerPrefs
     }
 
     void Update()
@@ -22,6 +22,7 @@ public class MoneyManager : MonoBehaviour
     public void AddMoney(int amount)
     {
         totalMoney += amount;
+        SaveMoney(); // Save the updated amount
     }
 
     // Method to deduct money if enough is available
@@ -30,6 +31,7 @@ public class MoneyManager : MonoBehaviour
         if (amount <= totalMoney)
         {
             totalMoney -= amount;
+            SaveMoney(); // Save the updated amount
             return true; // The spend was successful
         }
         else
@@ -42,5 +44,17 @@ public class MoneyManager : MonoBehaviour
     public int GetTotalMoney()
     {
         return totalMoney;
+    }
+
+    // Method to save money to PlayerPrefs
+    private void SaveMoney()
+    {
+        PlayerPrefs.SetInt("TotalMoney", totalMoney);
+    }
+
+    // Method to load money from PlayerPrefs
+    private void LoadMoney()
+    {
+        totalMoney = PlayerPrefs.GetInt("TotalMoney", 0); // Load with a default of 0 if not previously saved
     }
 }

@@ -25,14 +25,31 @@ public class ClownfishMovement : MonoBehaviour
     private HungerActivity hungerActivity;
     private ClownFishGrowth clownFishGrowth;
 
+     private float saveInterval = 10f;  //30 SEC       // 600f; // 10 minutes
+    private float nextSaveTime;
+
+    // Unique identifier for each clownfish instance
+    private static int nextId = 0;
+    private int id;
+
+
+
+    void Awake()
+    {
+        id = nextId++;
+    }
 
 
     // Start is called before the first frame update
     void Start()
     {
-        SetRandomStartPosition();
-        transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-        currentXCoordinate = transform.position.x;
+
+        
+       //LoadPosition();
+       // nextSaveTime = Time.time + saveInterval;
+       // SetRandomStartPosition();
+       // transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+       // currentXCoordinate = transform.position.x;
         destinationPosition = GetRandomScreenPosition();
         if (currentXCoordinate > destinationPosition.x)
         {
@@ -52,43 +69,20 @@ public class ClownfishMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float movementSpeed = speed * Time.deltaTime;
-        if (!hungerActivity.getIsDying())
-        {
-            if (!hungerActivity.getIsHungry())
+        //Updating the next save time
+        // if (Time.time >= nextSaveTime)
+        // {
+        //     SavePosition();
+        //     nextSaveTime = Time.time + saveInterval;
+        // }
+        SavePosition();
+
+       
+
+            float movementSpeed = speed * Time.deltaTime;
+            if (!hungerActivity.getIsDying())
             {
-                if (!arrivedAtDestination)
-                {
-                    transform.position = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
-                    if (Vector2.Distance(transform.position, destinationPosition) < arrivalThreshold)
-                    {
-                        arrivedAtDestination = true; // Set the flag to true when destination is reached
-                        speed = 0; // Stop the movement
-                        StartCoroutine(WaitAtDestination(Random.Range(minWaitTime, maxWaitTime)));
-                    }
-                }
-            }
-            else
-            {
-                GameObject closestFood = FindClosestFood();
-                if (closestFood != null)
-                {
-                    speed = tempSpeed;
-                    // Move towards the closest food object
-                    destinationPosition = closestFood.transform.position;
-                    transform.position = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
-                    if (Vector2.Distance(transform.position, destinationPosition) < arrivalThreshold)
-                    {
-                        FoodDisplay foodDisplay = closestFood.GetComponent<FoodDisplay>();
-                        hungerActivity.addToHunger(foodDisplay.GetValue());
-                        clownFishGrowth.addToGrowth(foodDisplay.GetGrowthValue());
-                        Destroy(closestFood);
-                        arrivedAtDestination = true; // Set the flag to true when destination is reached
-                        speed = 0; // Stop the movement
-                        StartCoroutine(WaitAtDestination(1));
-                    }
-                }
-                else
+                if (!hungerActivity.getIsHungry())
                 {
                     if (!arrivedAtDestination)
                     {
@@ -101,9 +95,85 @@ public class ClownfishMovement : MonoBehaviour
                         }
                     }
                 }
+                else
+                {
+                    GameObject closestFood = FindClosestFood();
+                    if (closestFood != null)
+                    {
+                        speed = tempSpeed;
+                        // Move towards the closest food object
+                        destinationPosition = closestFood.transform.position;
+                        transform.position = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
+                        if (Vector2.Distance(transform.position, destinationPosition) < arrivalThreshold)
+                        {
+                            FoodDisplay foodDisplay = closestFood.GetComponent<FoodDisplay>();
+                            hungerActivity.addToHunger(foodDisplay.GetValue());
+                            clownFishGrowth.addToGrowth(foodDisplay.GetGrowthValue());
+                            Destroy(closestFood);
+                            arrivedAtDestination = true; // Set the flag to true when destination is reached
+                            speed = 0; // Stop the movement
+                            StartCoroutine(WaitAtDestination(1));
+                        }
+                    }
+                    else
+                    {
+                        if (!arrivedAtDestination)
+                        {
+                            transform.position = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
+                            if (Vector2.Distance(transform.position, destinationPosition) < arrivalThreshold)
+                            {
+                                arrivedAtDestination = true; // Set the flag to true when destination is reached
+                                speed = 0; // Stop the movement
+                                StartCoroutine(WaitAtDestination(Random.Range(minWaitTime, maxWaitTime)));
+                            }
+                        }
+                    }
+                }
             }
+       
+        
+    }
+
+    
+
+    //Storing ClownFishPosition
+    private void SavePosition()
+    {
+        PlayerPrefs.SetString("ClownfishPosition_" + id, SerializeVector(transform.position));
+    }
+    //Loading it
+    private void LoadPosition()
+    {
+        string savedPosition = PlayerPrefs.GetString("ClownfishPosition_" + id, string.Empty);
+        if (!string.IsNullOrEmpty(savedPosition))
+        {
+            Vector3 position = DeserializeVector(savedPosition);
+            transform.position = position;
         }
     }
+
+    //Data Serialization and Deserialization.
+    private string SerializeVector(Vector3 vector)
+    {
+        return vector.x + "," + vector.y + "," + vector.z;
+    }
+    private Vector3 DeserializeVector(string data)
+    {
+        string[] values = data.Split(',');
+        if (values.Length == 3)
+        {
+            return new Vector3(float.Parse(values[0]), float.Parse(values[1]), float.Parse(values[2]));
+        }
+        return Vector3.zero;
+    }
+
+
+
+
+
+
+
+
 
     Vector2 GetRandomScreenPosition()
     {

@@ -14,6 +14,7 @@ public class ButtonSpawnScripts : MonoBehaviour
         moneyManager = GameObject.Find("GameManager").GetComponent<MoneyManager>();
         
     }
+    
     public void SpawnClownfish()
     {
         bool didSpend = moneyManager.SpendMoney(100);
