@@ -6,17 +6,15 @@ using TMPro;
 using System.Collections.Generic;
 
 
+
 public class MainMenu : MonoBehaviour
 {
 
-    public TMP_InputField nameInputField;
+   
     public TMP_Text nameDisplayText;
 
     private const string UserNamePrefKey = "UserName";
-
-    public GameObject menuOptions;
-
-    public GameObject userNameRegister;
+   
     public GameObject settingsPanel;
     public Toggle isFullScreenToggle;
     public TMP_Dropdown resolutionDropdown;
@@ -27,78 +25,20 @@ public class MainMenu : MonoBehaviour
    
     private Resolution[] resolutions;
 
-
+    public string sceneLobby; 
+    public string sceneLevel1; 
 
     void Start()
     {
-        // Load the saved name and display it
         string savedName = PlayerPrefs.GetString(UserNamePrefKey, "");
         nameDisplayText.text = savedName;
-
-        if (string.IsNullOrEmpty(savedName))
-        {
-            // No name saved, show only the name input
-            menuOptions.SetActive(false);
-            userNameRegister.SetActive(true);
-        }
-        else
-        {
-            // Name already saved, show menu options
-            userNameRegister.SetActive(false);
-            menuOptions.SetActive(true);
-            nameDisplayText.text = savedName;
-
-            LoadSettings();
-            isFullScreenToggle.onValueChanged.AddListener(HandleFullScreenToggle);
-        }
-
         settingsPanel.SetActive(false);
-
         LoadSettings();
-       
-     
-        
     }
 
-    public void SaveName()
-    {
-        string userName = nameInputField.text;
-        PlayerPrefs.SetString(UserNamePrefKey, userName);
-        PlayerPrefs.Save();
-
-                if (!string.IsNullOrEmpty(userName))
-                {
-                    PlayerPrefs.SetString(UserNamePrefKey, userName);
-                    PlayerPrefs.Save();
-
-                    nameDisplayText.text = userName;
-
-                    // Hide name input and show menu options
-                    userNameRegister.SetActive(false);
-                    menuOptions.SetActive(true);
-
-                    LoadSettings();
-                    isFullScreenToggle.onValueChanged.AddListener(HandleFullScreenToggle);
-                }
-       
-        nameDisplayText.text = userName;
-    }
-
- 
-
+    
    
-    private void HandleFullScreenToggle(bool isFullScreen)
-    {
-        SetFullScreen(isFullScreen);
-    }
 
-    private void SetFullScreen(bool isFullScreen)
-    {
-        // Just set the full screen mode, don't change the resolution here
-        Screen.fullScreen = isFullScreen;
-    }
-
-  
     private void LoadSettings()
     {
         // Load saved settings from PlayerPrefs
@@ -112,6 +52,17 @@ public class MainMenu : MonoBehaviour
         LoadResolutions(savedResolutionIndex);
         isFullScreenToggle.isOn = isFullScreenSaved;
   
+    }
+
+    private void HandleFullScreenToggle(bool isFullScreen)
+    {
+        SetFullScreen(isFullScreen);
+    }
+
+    private void SetFullScreen(bool isFullScreen)
+    {
+        // Just set the full screen mode, don't change the resolution here
+        Screen.fullScreen = isFullScreen;
     }
 
     private void LoadResolutions(int savedResolutionIndex)
@@ -209,7 +160,13 @@ public class MainMenu : MonoBehaviour
 
     public void LoadSampleScene()
     {
-        SceneManager.LoadScene("SampleScene");
+        SceneManager.LoadScene(sceneLevel1);
+        LoadSettings();
+    }
+
+    public void LoadLobbyScene()
+    {
+        SceneManager.LoadScene(sceneLobby);
         LoadSettings();
     }
 
@@ -230,12 +187,17 @@ public class MainMenu : MonoBehaviour
     {
         if (settingsPanel != null)
             settingsPanel.SetActive(false);
+            
     }
 
-    public void QuitGame()
+    public void onExitGame()
     {
         Application.Quit();
+        Debug.Log("Exiting game! !;-( ");
     }
+
+
+  
 
   
 }
