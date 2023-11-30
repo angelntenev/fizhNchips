@@ -11,7 +11,9 @@ public class HungerActivityCarnivore : MonoBehaviour
     private bool isDying = false;
     private MovementCarnivore movementCarnivore;
     private FallDownBehaviour fallDownBehaviour;
-    // Start is called before the first frame update
+    private bool shouldLoseHunger = true;
+
+    
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -22,10 +24,11 @@ public class HungerActivityCarnivore : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Reduce hunger over time
-        hunger -= hungerDecayRate * Time.deltaTime;
+        if (shouldLoseHunger)
+        {
+            hunger -= hungerDecayRate * Time.deltaTime;
+        }
 
-        // Clamp the hunger value to ensure it doesn't go below 0
         hunger = Mathf.Clamp(hunger, -100f, 300f);
 
         // Check if the fish is hungry
@@ -73,5 +76,22 @@ public class HungerActivityCarnivore : MonoBehaviour
             isHungry = false;
             spriteRenderer.color = Color.white;
         }
+    }
+
+    public void pauseHunger(bool pause)
+    {
+        if (pause)
+        {
+            shouldLoseHunger = false;
+        }
+        else
+        {
+            shouldLoseHunger = true;
+        }
+    }
+
+    public bool getShouldBeHungry()
+    {
+        return shouldLoseHunger;
     }
 }

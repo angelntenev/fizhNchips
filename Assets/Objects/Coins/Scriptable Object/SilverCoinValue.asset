@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4c2c9896f36f5e9479c1891e824ffc36, type: 3}
-  m_Name: BasicCoinValue
+  m_Name: SilverCoinValue
   m_EditorClassIdentifier: 
-  nameOfCollectable: Coin
-  artwork: {fileID: 21300000, guid: 5d8d555b6b553a94a9cd8f7fcb457c50, type: 3}
+  nameOfCollectable: CoinSilver
   value: 20
+  growthValue: 0

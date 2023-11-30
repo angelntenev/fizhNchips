@@ -6,6 +6,7 @@ public class ClownfishMovement : MonoBehaviour
 {
     public GameObject collectablePrefab;
     public Vector2 spawnOffset = new Vector2(0, -0.5f);
+    private float screenLeft, screenRight, screenTop, screenBottom;
 
     private bool arrivedAtDestination;
     [HideInInspector]
@@ -22,22 +23,15 @@ public class ClownfishMovement : MonoBehaviour
     public float speed;
     private float tempSpeed;
 
-    private HungerActivity hungerActivity;
+    private HungerActivityClownFish hungerActivity;
     private ClownFishGrowth clownFishGrowth;
+    private bool bossActive = false;
 
-     private float saveInterval = 10f;  //30 SEC       // 600f; // 10 minutes
-    private float nextSaveTime;
+    SpriteRenderer spriteRenderer;
 
     // Unique identifier for each clownfish instance
     private static int nextId = 0;
     private int id;
-
-
-
-    void Awake()
-    {
-        id = nextId++;
-    }
 
 
     // Start is called before the first frame update
@@ -62,31 +56,44 @@ public class ClownfishMovement : MonoBehaviour
         arrivedAtDestination = false;
         waiting = false;
         tempSpeed = speed;
-        hungerActivity = GetComponent<HungerActivity>();
+        hungerActivity = GetComponent<HungerActivityClownFish>();
         clownFishGrowth = GetComponent<ClownFishGrowth>();
+
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        float spriteHalfWidth = spriteRenderer.bounds.extents.x;
+        float spriteHalfHeight = spriteRenderer.bounds.extents.y;
+
+
+        Camera mainCamera = Camera.main;
+        screenLeft = mainCamera.ViewportToWorldPoint(new Vector3(0, 0, 0)).x + spriteHalfWidth;
+        screenRight = mainCamera.ViewportToWorldPoint(new Vector3(1, 0, 0)).x - spriteHalfWidth;
+        screenTop = mainCamera.ViewportToWorldPoint(new Vector3(0, 1, 0)).y - spriteHalfHeight;
+        screenBottom = mainCamera.ViewportToWorldPoint(new Vector3(0, 0, 0)).y + spriteHalfHeight;
     }
 
     // Update is called once per frame
     void Update()
     {
-        //Updating the next save time
-        // if (Time.time >= nextSaveTime)
-        // {
-        //     SavePosition();
-        //     nextSaveTime = Time.time + saveInterval;
-        // }
-        SavePosition();
+        float movementSpeed = speed * Time.deltaTime;
+        if (!hungerActivity.getIsDying())
+        {
+            Vector3 newPosition = transform.position; // Initialize newPosition with the current position
 
-       
-
-            float movementSpeed = speed * Time.deltaTime;
-            if (!hungerActivity.getIsDying())
+            if (bossActive)
+            {
+                GameObject boss = GameObject.FindGameObjectWithTag("Enemy");
+                Vector2 directionToFish = transform.position - boss.transform.position;
+                directionToFish.Normalize();
+                Vector3 directionToFish3D = new Vector3(directionToFish.x, directionToFish.y, 0);
+                newPosition = transform.position + (directionToFish3D * speed * Time.deltaTime);
+            }
+            else
             {
                 if (!hungerActivity.getIsHungry())
                 {
                     if (!arrivedAtDestination)
                     {
-                        transform.position = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
+                        newPosition = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
                         if (Vector2.Distance(transform.position, destinationPosition) < arrivalThreshold)
                         {
                             arrivedAtDestination = true; // Set the flag to true when destination is reached
@@ -103,7 +110,7 @@ public class ClownfishMovement : MonoBehaviour
                         speed = tempSpeed;
                         // Move towards the closest food object
                         destinationPosition = closestFood.transform.position;
-                        transform.position = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
+                        newPosition = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
                         if (Vector2.Distance(transform.position, destinationPosition) < arrivalThreshold)
                         {
                             FoodDisplay foodDisplay = closestFood.GetComponent<FoodDisplay>();
@@ -119,7 +126,7 @@ public class ClownfishMovement : MonoBehaviour
                     {
                         if (!arrivedAtDestination)
                         {
-                            transform.position = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
+                            newPosition = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
                             if (Vector2.Distance(transform.position, destinationPosition) < arrivalThreshold)
                             {
                                 arrivedAtDestination = true; // Set the flag to true when destination is reached
@@ -130,49 +137,15 @@ public class ClownfishMovement : MonoBehaviour
                     }
                 }
             }
-       
-        
-    }
 
-    
+            // Clamp the new position to the screen boundaries
+            newPosition.x = Mathf.Clamp(newPosition.x, screenLeft, screenRight);
+            newPosition.y = Mathf.Clamp(newPosition.y, screenBottom, screenTop);
 
-    //Storing ClownFishPosition
-    private void SavePosition()
-    {
-        PlayerPrefs.SetString("ClownfishPosition_" + id, SerializeVector(transform.position));
-    }
-    //Loading it
-    private void LoadPosition()
-    {
-        string savedPosition = PlayerPrefs.GetString("ClownfishPosition_" + id, string.Empty);
-        if (!string.IsNullOrEmpty(savedPosition))
-        {
-            Vector3 position = DeserializeVector(savedPosition);
-            transform.position = position;
+            // Apply the clamped position
+            transform.position = newPosition;
         }
     }
-
-    //Data Serialization and Deserialization.
-    private string SerializeVector(Vector3 vector)
-    {
-        return vector.x + "," + vector.y + "," + vector.z;
-    }
-    private Vector3 DeserializeVector(string data)
-    {
-        string[] values = data.Split(',');
-        if (values.Length == 3)
-        {
-            return new Vector3(float.Parse(values[0]), float.Parse(values[1]), float.Parse(values[2]));
-        }
-        return Vector3.zero;
-    }
-
-
-
-
-
-
-
 
 
     Vector2 GetRandomScreenPosition()
@@ -301,5 +274,10 @@ public class ClownfishMovement : MonoBehaviour
     {
         clownFishGrowth = GetComponent<ClownFishGrowth>();
         return clownFishGrowth.GetMaturity();
+    }
+
+    public void setBossActive(bool active)
+    {
+        bossActive = active;
     }
 }

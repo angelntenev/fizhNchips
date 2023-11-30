@@ -1828,9 +1828,10 @@ GameObject:
   m_Component:
   - component: {fileID: 729675104}
   - component: {fileID: 729675103}
+  - component: {fileID: 729675105}
   m_Layer: 0
   m_Name: GameManager
-  m_TagString: Untagged
+  m_TagString: Manager
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4022,6 +4023,7 @@ MonoBehaviour:
   CoinValues: {fileID: 11400000, guid: d666d1301aee30840b330af60ecfdd1d, type: 2}
   Food: {fileID: 65764361288074828, guid: ce9b2c6c46e95f54386c84f710f6cf33, type: 3}
   buyOption1: {fileID: 5964340144290572317, guid: f0807381a243df5448b59587504d7099, type: 3}
+  currentDamage: 5
 --- !u!114 &1897412362
 MonoBehaviour:
   m_ObjectHideFlags: 0

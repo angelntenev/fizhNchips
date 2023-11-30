@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 7899644031137625323}
   - component: {fileID: -7850861380943580341}
   m_Layer: 0
-  m_Name: CopperCollectable
+  m_Name: CoinSilver
   m_TagString: Collectable
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

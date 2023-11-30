@@ -6,6 +6,7 @@ public class MovementCarnivore : MonoBehaviour
 {
     public GameObject collectablePrefab;
     public Vector2 spawnOffset = new Vector2(0, -0.5f);
+    private float screenLeft, screenRight, screenTop, screenBottom;
 
     private bool arrivedAtDestination;
     [HideInInspector]
@@ -24,14 +25,8 @@ public class MovementCarnivore : MonoBehaviour
 
     private HungerActivityCarnivore hungerActivityCarnivore;
 
-    private static int nextCarnivoreId = 0;
-    private int carnivoreId;
-
-    void Awake() 
-    {
-        carnivoreId = nextCarnivoreId++;
-    }
-
+    private bool bossActive = false;
+    SpriteRenderer spriteRenderer;
 
     // Start is called before the first frame update
     void Start()
@@ -54,55 +49,43 @@ public class MovementCarnivore : MonoBehaviour
         tempSpeed = speed;
         hungerActivityCarnivore = GetComponent<HungerActivityCarnivore>();
         StartCoinDropping();
+
+
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        float spriteHalfWidth = spriteRenderer.bounds.extents.x;
+        float spriteHalfHeight = spriteRenderer.bounds.extents.y;
+
+
+        Camera mainCamera = Camera.main;
+        screenLeft = mainCamera.ViewportToWorldPoint(new Vector3(0, 0, 0)).x + spriteHalfWidth;
+        screenRight = mainCamera.ViewportToWorldPoint(new Vector3(1, 0, 0)).x - spriteHalfWidth;
+        screenTop = mainCamera.ViewportToWorldPoint(new Vector3(0, 1, 0)).y - spriteHalfHeight;
+        screenBottom = mainCamera.ViewportToWorldPoint(new Vector3(0, 0, 0)).y + spriteHalfHeight;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
-        SavePosition();
-        
         float movementSpeed = speed * Time.deltaTime;
         if (!hungerActivityCarnivore.getIsDying())
         {
-          
-            if (!hungerActivityCarnivore.getIsHungry())
+            Vector3 newPosition = transform.position; // Initialize newPosition with the current position
+
+            if (bossActive)
             {
-                if (!arrivedAtDestination)
-                {
-                    transform.position = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
-                    if (Vector2.Distance(transform.position, destinationPosition) < arrivalThreshold)
-                    {
-                        arrivedAtDestination = true; // Set the flag to true when destination is reached
-                        speed = 0; // Stop the movement
-                        StartCoroutine(WaitAtDestination(Random.Range(minWaitTime, maxWaitTime)));
-                    }
-                }
+                GameObject boss = GameObject.FindGameObjectWithTag("Enemy");
+                Vector2 directionToFish = transform.position - boss.transform.position;
+                directionToFish.Normalize();
+                Vector3 directionToFish3D = new Vector3(directionToFish.x, directionToFish.y, 0);
+                newPosition = transform.position + (directionToFish3D * speed * Time.deltaTime);
             }
             else
             {
-                GameObject closestFood = FindClosestFood();
-                if (closestFood != null)
-                {
-                    speed = tempSpeed;
-                    // Move towards the closest food object
-                    destinationPosition = closestFood.transform.position;
-                    transform.position = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
-                    if (Vector2.Distance(transform.position, destinationPosition) < arrivalThreshold)
-                    {
-                        FoodDisplay foodDisplay = closestFood.GetComponent<FoodDisplay>();
-                        hungerActivityCarnivore.addToHunger(150);
-                        Destroy(closestFood);
-                        arrivedAtDestination = true; // Set the flag to true when destination is reached
-                        speed = 0; // Stop the movement
-                        StartCoroutine(WaitAtDestination(1));
-                    }
-                }
-                else
+                if (!hungerActivityCarnivore.getIsHungry())
                 {
                     if (!arrivedAtDestination)
                     {
-                        transform.position = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
+                        newPosition = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
                         if (Vector2.Distance(transform.position, destinationPosition) < arrivalThreshold)
                         {
                             arrivedAtDestination = true; // Set the flag to true when destination is reached
@@ -111,7 +94,47 @@ public class MovementCarnivore : MonoBehaviour
                         }
                     }
                 }
+                else
+                {
+                    GameObject closestFood = FindClosestFood();
+                    if (closestFood != null)
+                    {
+                        speed = tempSpeed;
+                        // Move towards the closest food object
+                        destinationPosition = closestFood.transform.position;
+                        newPosition = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
+                        if (Vector2.Distance(transform.position, destinationPosition) < arrivalThreshold)
+                        {
+                            FoodDisplay foodDisplay = closestFood.GetComponent<FoodDisplay>();
+                            hungerActivityCarnivore.addToHunger(150);
+                            Destroy(closestFood);
+                            arrivedAtDestination = true; // Set the flag to true when destination is reached
+                            speed = 0; // Stop the movement
+                            StartCoroutine(WaitAtDestination(1));
+                        }
+                    }
+                    else
+                    {
+                        if (!arrivedAtDestination)
+                        {
+                            newPosition = Vector2.MoveTowards(transform.position, destinationPosition, movementSpeed);
+                            if (Vector2.Distance(transform.position, destinationPosition) < arrivalThreshold)
+                            {
+                                arrivedAtDestination = true; // Set the flag to true when destination is reached
+                                speed = 0; // Stop the movement
+                                StartCoroutine(WaitAtDestination(Random.Range(minWaitTime, maxWaitTime)));
+                            }
+                        }
+                    }
+                }
             }
+
+            // Clamp the new position to the adjusted screen boundaries
+            newPosition.x = Mathf.Clamp(newPosition.x, screenLeft, screenRight);
+            newPosition.y = Mathf.Clamp(newPosition.y, screenBottom, screenTop);
+
+            // Apply the clamped position
+            transform.position = newPosition;
         }
     }
 
@@ -121,39 +144,6 @@ public class MovementCarnivore : MonoBehaviour
     {
         PlayerPrefs.SetString("CarnivorePosition_" + carnivoreId, SerializeVector(transform.position));
     }
-
-    private void LoadPosition()
-    {
-        string savedPosition = PlayerPrefs.GetString("CarnivorePosition_" + carnivoreId, string.Empty);
-        if (!string.IsNullOrEmpty(savedPosition))
-        {
-            Vector3 position = DeserializeVector(savedPosition);
-            transform.position = position;
-        }
-    }
-
-    private string SerializeVector(Vector3 vector)
-    {
-        return vector.x + "," + vector.y + "," + vector.z;
-    }
-
-    private Vector3 DeserializeVector(string data)
-    {
-        string[] values = data.Split(',');
-        if (values.Length == 3)
-        {
-            return new Vector3(float.Parse(values[0]), float.Parse(values[1]), float.Parse(values[2]));
-        }
-        return Vector3.zero;
-    }
-
-
-
-
-
-
-
-
 
 
     Vector2 GetRandomScreenPosition()
@@ -280,5 +270,10 @@ public class MovementCarnivore : MonoBehaviour
     public void StopCoinDropping()
     {
         CancelInvoke("SpawnCollectable");
+    }
+
+    public void setBossActive(bool active)
+    {
+        bossActive = active;
     }
 }

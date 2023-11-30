@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HungerActivity : MonoBehaviour
+public class HungerActivityClownFish : MonoBehaviour
 {
     public float hunger = 100f; // Initial hunger level
     public float hungerDecayRate = 1f; // The rate at which hunger decays per second
@@ -11,6 +11,7 @@ public class HungerActivity : MonoBehaviour
     private bool isDying = false;
     private ClownfishMovement clownfishMovement;
     private FallDownBehaviour fallDownBehaviour;
+    private bool shouldLoseHunger = true;
 
 
 
@@ -22,14 +23,15 @@ public class HungerActivity : MonoBehaviour
         clownfishMovement = GetComponent<ClownfishMovement>();
         fallDownBehaviour = GetComponent<FallDownBehaviour>();
     }
-
+    
     // Update is called once per frame
     void Update()
     {
-        // Reduce hunger over time
-        hunger -= hungerDecayRate * Time.deltaTime;
+        if (shouldLoseHunger)
+        {
+            hunger -= hungerDecayRate * Time.deltaTime;
+        }
 
-        // Clamp the hunger value to ensure it doesn't go below 0
         hunger = Mathf.Clamp(hunger, -100f, 300f);
 
         // Check if the fish is hungry
@@ -79,4 +81,20 @@ public class HungerActivity : MonoBehaviour
         }
     }
     
+    public void pauseHunger(bool pause)
+    {
+        if (pause)
+        {
+            shouldLoseHunger = false;
+        }
+        else 
+        {
+            shouldLoseHunger = true;
+        }
+    }
+
+    public bool getShouldBeHungry()
+    {
+        return shouldLoseHunger;
+    }
 }
